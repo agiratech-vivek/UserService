@@ -2,11 +2,14 @@ package com.example.agirafirstproject.controller;
 
 import com.example.agirafirstproject.model.User;
 import com.example.agirafirstproject.service.UserService;
+import com.example.agirafirstproject.service.UserServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Entity;
 import java.util.List;
 
 @RestController
@@ -22,11 +25,11 @@ public class UserController {
         User user = userService.getSingleUser(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
-//    @GetMapping
-//    public ResponseEntity<List<User>> getAllUser(){
-//        List<User> allUser = userService.getAllUser();
-//        return new ResponseEntity<>(allUser, HttpStatus.OK);
-//    }
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUser(){
+        List<User> allUser = userService.getAllUser();
+        return new ResponseEntity<>(allUser, HttpStatus.OK);
+    }
     @GetMapping
     public ResponseEntity<User> addUser(@RequestBody User user){
         User addedUser = userService.addUser(user);
