@@ -5,7 +5,9 @@ import lombok.Setter;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,4 +19,8 @@ public class User extends BaseModel{
     private Address address;
     private String contact;
     private String email;
+    @ManyToMany
+    private List<Role> roleList;
+    private String password;
+
 }

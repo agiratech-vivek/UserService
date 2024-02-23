@@ -1,58 +1,76 @@
 package com.example.agirafirstproject.controller;
 
+import com.example.agirafirstproject.dto.ModifyUserDto;
+import com.example.agirafirstproject.dto.UserRequestDto;
+import com.example.agirafirstproject.dto.UserResponseDto;
+import com.example.agirafirstproject.model.Address;
+import com.example.agirafirstproject.model.GeoLocation;
+import com.example.agirafirstproject.model.Name;
 import com.example.agirafirstproject.model.User;
 import com.example.agirafirstproject.service.UserService;
-import com.example.agirafirstproject.service.UserServiceImplementation;
+import com.example.agirafirstproject.utility.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.Entity;
+import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
 public class UserController {
     UserService userService;
+    UserMapper userMapper;
+
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserMapper userMapper) {
         this.userService = userService;
+        this.userMapper = userMapper;
     }
+
     @GetMapping("/{id}")
-    public ResponseEntity<User> getSingleUser(@PathVariable long id){
+    public ResponseEntity<UserResponseDto> getSingleUser(@PathVariable long id) {
         User user = userService.getSingleUser(id);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+        UserResponseDto userResponseDto = userMapper.userToUserResponseDto(user);
+        return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
     }
+
     @GetMapping
-    public ResponseEntity<List<User>> getAllUser(){
+    public ResponseEntity<List<UserResponseDto>> getAllUser() {
         List<User> allUser = userService.getAllUser();
-        return new ResponseEntity<>(allUser, HttpStatus.OK);
+        List<UserResponseDto> userResponseDtoList = allUser.stream()
+                .map(user -> userMapper.userToUserResponseDto(user)).collect(Collectors.toList());
+        return new ResponseEntity<>(userResponseDtoList, HttpStatus.OK);
     }
-    @GetMapping
-    public ResponseEntity<User> addUser(@RequestBody User user){
-        User addedUser = userService.addUser(user);
-        return new ResponseEntity<>(addedUser, HttpStatus.OK);
+
+    @PostMapping
+    public ResponseEntity<UserResponseDto> addUser(@Valid @RequestBody UserRequestDto userRequestDto) {
+        User addedUser = userService.addUser(userMapper.UserRequestDtoToUser(userRequestDto));
+        return new ResponseEntity<>(userMapper.userToUserResponseDto(addedUser), HttpStatus.CREATED);
     }
+
     @PatchMapping("/{id}")
-    public ResponseEntity<User> updateUser(@RequestBody User user, @PathVariable long id){
+    public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody ModifyUserDto modifyUserDto, @PathVariable long id) {
+        User user = userMapper.modifyUserDtoToUser(modifyUserDto);
         User updatedUser = userService.updateUser(user, id);
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(userMapper.userToUserResponseDto(updatedUser), HttpStatus.OK);
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<User> replaceUser(@RequestBody User user, @PathVariable long id){
-        User replacedUser = userService.replaceUser(user, id);
-        return new ResponseEntity<>(replacedUser, HttpStatus.OK);
-    }
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable long id){
-        String message = "User successfully deleted";
-        HttpStatus httpStatus = HttpStatus.OK;
-        if(!userService.deleteUser(id)){
-            message = "User not found with id: " + id;
-            httpStatus = HttpStatus.NOT_FOUND;
+    public ResponseEntity<User> replaceUser(@RequestBody UserRequestDto userRequestDto, @PathVariable long id) {
+        User replacedUser = userService.replaceUser(userMapper.UserRequestDtoToUser(userRequestDto), id);
+        if (replacedUser == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(message, httpStatus);
+        return new ResponseEntity<>(replacedUser, HttpStatus.ACCEPTED);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable long id) {
+        userService.deleteUser(id);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

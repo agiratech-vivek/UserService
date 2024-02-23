@@ -1,8 +1,8 @@
 package com.example.agirafirstproject.service;
 
+import com.example.agirafirstproject.exceptions.UserNotFoundException;
 import com.example.agirafirstproject.model.User;
 import com.example.agirafirstproject.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,7 +11,6 @@ import java.util.Optional;
 @Service
 public class UserServiceImplementation implements UserService{
     public UserRepository userRepository;
-    @Autowired
     public UserServiceImplementation(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -19,7 +18,10 @@ public class UserServiceImplementation implements UserService{
     @Override
     public User getSingleUser(long id) {
         Optional<User> userOptional = userRepository.findById(id);
-        return userOptional.orElse(null);
+        if(!userOptional.isPresent()){
+            throw new UserNotFoundException("User not found with id: ", id);
+        }
+        return userOptional.get();
     }
 
     @Override
@@ -36,7 +38,7 @@ public class UserServiceImplementation implements UserService{
     public User updateUser(User user, long id) {
         Optional<User> userOptional = userRepository.findById(id);
         if(!userOptional.isPresent()){
-            return null;
+            throw new UserNotFoundException("User not found with id: ", id);
         }
         User oldUser = userOptional.get();
         if(user.getAddress() != null){
@@ -56,11 +58,7 @@ public class UserServiceImplementation implements UserService{
 
     @Override
     public User replaceUser(User user, long id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        if(!userOptional.isPresent()){
-            return null;
-        }
-        User oldUser = userOptional.get();
+        User oldUser = getSingleUser(id);
         oldUser.setName(user.getName());
         oldUser.setAddress(user.getAddress());
         oldUser.setEmail(user.getEmail());
@@ -69,12 +67,10 @@ public class UserServiceImplementation implements UserService{
     }
 
     @Override
-    public boolean deleteUser(long id) {
-        Optional<User> userOptional = userRepository.findById(id);
-        if(!userOptional.isPresent()){
-            return false;
+    public void deleteUser(long id) {
+        if(!userRepository.findById(id).isPresent()){
+            throw new UserNotFoundException("User not found with id: ", id);
         }
         userRepository.deleteById(id);
-        return true;
     }
 }
