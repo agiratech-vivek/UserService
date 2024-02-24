@@ -1,5 +1,6 @@
 package com.example.agirafirstproject.service;
 
+import com.example.agirafirstproject.exceptions.UserDeletedException;
 import com.example.agirafirstproject.exceptions.UserNotFoundException;
 import com.example.agirafirstproject.model.User;
 import com.example.agirafirstproject.repository.UserRepository;
@@ -68,9 +69,15 @@ public class UserServiceImplementation implements UserService{
 
     @Override
     public void deleteUser(long id) {
-        if(!userRepository.findById(id).isPresent()){
+        Optional<User> userOptional = userRepository.findById(id);
+        if(!userOptional.isPresent()){
             throw new UserNotFoundException("User not found with id: ", id);
         }
-        userRepository.deleteById(id);
+        User user = userOptional.get();
+        if(user.isDeleted()){
+            throw new UserDeletedException("User has already been deleted with id: " + id);
+        }
+        user.setDeleted(true);
+        userRepository.save(user);
     }
 }

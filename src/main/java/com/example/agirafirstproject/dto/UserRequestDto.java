@@ -29,7 +29,6 @@ public class UserRequestDto {
     @Email(message = "Email not valid")
     private String email;
     private List<Role> roleList;
-    @Pattern(regexp = "^[a-zA-Z0-9]{6,10}$", message = "Password invalid, it should contain lower case, upper case and number")
-    @NotNull(message = "Password cannot be null")
+    @NotNull(message = "Password is mandatory")
     private String password;
 }

@@ -10,6 +10,7 @@ import com.example.agirafirstproject.model.User;
 import com.example.agirafirstproject.service.UserService;
 import com.example.agirafirstproject.utility.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -43,6 +44,7 @@ public class UserController {
         List<User> allUser = userService.getAllUser();
         List<UserResponseDto> userResponseDtoList = allUser.stream()
                 .map(user -> userMapper.userToUserResponseDto(user)).collect(Collectors.toList());
+
         return new ResponseEntity<>(userResponseDtoList, HttpStatus.OK);
     }
 
