@@ -11,4 +11,7 @@ public interface UserService {
     public User updateUser(User user, long id);
     public User replaceUser(User user, long id);
     public void deleteUser(long id);
+    public List<User> getUserByCity(String city);
+    public List<User> getUserByRole(String role);
+    public List<User> getUserByFirstCharacter(String firstChar);
 }

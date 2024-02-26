@@ -19,7 +19,7 @@ public class User extends BaseModel{
     private Address address;
     private String contact;
     private String email;
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "userList")
     private List<Role> roleList;
     private String password;
 
