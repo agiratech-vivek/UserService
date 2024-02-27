@@ -4,12 +4,19 @@ import com.example.agirafirstproject.exceptions.UserDeletedException;
 import com.example.agirafirstproject.exceptions.UserNotFoundException;
 import com.example.agirafirstproject.model.User;
 import com.example.agirafirstproject.repository.UserRepository;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImplementation implements UserService {
@@ -29,8 +36,9 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public List<User> getAllUser() {
-        return userRepository.findAll();
+    public List<User> getAllUser(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findAll(pageable).stream().collect(Collectors.toList());
     }
 
     @Override

@@ -27,31 +27,36 @@ public class UserController {
     UserService userService;
     @Autowired
     UserMapper userMapper;
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getSingleUser(@PathVariable long id) {
         User user = userService.getSingleUser(id);
         UserResponseDto userResponseDto = userMapper.userToUserResponseDto(user);
         return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
     }
+
     @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAllUser() {
-        List<User> allUser = userService.getAllUser();
+    public ResponseEntity<List<UserResponseDto>> getAllUser(@RequestParam(defaultValue = "0") int page,
+                                                            @RequestParam(defaultValue = "10") int size) {
+        List<User> allUser = userService.getAllUser(page, size);
         List<UserResponseDto> userResponseDtoList = allUser.stream()
                 .map(user -> userMapper.userToUserResponseDto(user)).collect(Collectors.toList());
-
         return new ResponseEntity<>(userResponseDtoList, HttpStatus.OK);
     }
+
     @PostMapping
     public ResponseEntity<UserResponseDto> addUser(@Valid @RequestBody UserRequestDto userRequestDto) {
         User addedUser = userService.addUser(userMapper.UserRequestDtoToUser(userRequestDto));
         return new ResponseEntity<>(userMapper.userToUserResponseDto(addedUser), HttpStatus.CREATED);
     }
+
     @PatchMapping("/{id}")
     public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody ModifyUserDto modifyUserDto, @PathVariable long id) {
         User user = userMapper.modifyUserDtoToUser(modifyUserDto);
         User updatedUser = userService.updateUser(user, id);
         return new ResponseEntity<>(userMapper.userToUserResponseDto(updatedUser), HttpStatus.OK);
     }
+
     @PutMapping("/{id}")
     public ResponseEntity<User> replaceUser(@RequestBody UserRequestDto userRequestDto, @PathVariable long id) {
         User replacedUser = userService.replaceUser(userMapper.UserRequestDtoToUser(userRequestDto), id);
@@ -60,13 +65,15 @@ public class UserController {
         }
         return new ResponseEntity<>(replacedUser, HttpStatus.ACCEPTED);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable long id) {
         userService.deleteUser(id);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
     @GetMapping("/city/{city}")
-    public ResponseEntity<List<UserResponseDto>> getUserByCity(@PathVariable String city){
+    public ResponseEntity<List<UserResponseDto>> getUserByCity(@PathVariable String city) {
         List<User> userByCity = userService.getUserByCity(city);
         List<UserResponseDto> userResponseDtoList = userByCity.stream()
                 .map(user -> userMapper.userToUserResponseDto(user))
@@ -75,7 +82,7 @@ public class UserController {
     }
 
     @GetMapping("/role/{role}")
-    public ResponseEntity<List<UserResponseDto>> getUserByRole(@PathVariable String role){
+    public ResponseEntity<List<UserResponseDto>> getUserByRole(@PathVariable String role) {
         List<User> userByRole = userService.getUserByRole(role);
         List<UserResponseDto> userResponseDtoList = userByRole.stream()
                 .map(user -> userMapper.userToUserResponseDto(user))
@@ -84,7 +91,7 @@ public class UserController {
     }
 
     @GetMapping("/search/{firstCharacter}")
-    public ResponseEntity<List<UserResponseDto>> getUserByFirstCharacter(@PathVariable String firstCharacter){
+    public ResponseEntity<List<UserResponseDto>> getUserByFirstCharacter(@PathVariable String firstCharacter) {
         List<User> userByFirstCharacter = userService.getUserByFirstCharacter(firstCharacter);
         List<UserResponseDto> userResponseDtoList = userByFirstCharacter.stream()
                 .map(user -> userMapper.userToUserResponseDto(user))
