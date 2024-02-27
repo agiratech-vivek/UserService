@@ -2,6 +2,8 @@ package com.example.agirafirstproject.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.GeneratorType;
+import org.hibernate.id.UUIDGenerator;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.GeneratedValue;
@@ -9,17 +11,18 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Random;
+import java.util.UUID;
 
 @Getter
 @Setter
 @MappedSuperclass
 public class BaseModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate createdAt;
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private LocalDate updatedAt;
+    @GeneratedValue(generator = UUIDGenerator.ENTITY_NAME)
+    private UUID id;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private boolean deleted;
 }

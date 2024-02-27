@@ -3,10 +3,7 @@ package com.example.agirafirstproject.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import java.util.List;
 
 @Getter
@@ -22,5 +19,8 @@ public class User extends BaseModel{
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, mappedBy = "userList")
     private List<Role> roleList;
     private String password;
-
+    @OneToMany(mappedBy = "user")
+    private List<Order> orderList;
+    @OneToOne
+    private Cart cart;
 }

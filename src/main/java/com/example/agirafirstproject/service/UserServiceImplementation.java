@@ -1,21 +1,18 @@
 package com.example.agirafirstproject.service;
 
-import com.example.agirafirstproject.exceptions.UserDeletedException;
+import com.example.agirafirstproject.exceptions.UserAlreadyRegisteredException;
 import com.example.agirafirstproject.exceptions.UserNotFoundException;
 import com.example.agirafirstproject.model.User;
 import com.example.agirafirstproject.repository.UserRepository;
-import org.springframework.context.annotation.Scope;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import com.example.agirafirstproject.repository.projection.UserProjection;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,8 +24,8 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public User getSingleUser(long id) {
-        Optional<User> userOptional = userRepository.findById(id);
+    public User getSingleUser(UUID id) {
+        Optional<User> userOptional = userRepository.findByIdAndDeletedEquals(id, false);
         if (!userOptional.isPresent()) {
             throw new UserNotFoundException("User not found with id: ", id + "");
         }
@@ -36,24 +33,29 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public List<User> getAllUser(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        return userRepository.findAll(pageable).stream().collect(Collectors.toList());
+    public List<User> getAllUser(int page, int size, String sort) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+        return userRepository.findAllByDeletedEquals(false, pageable)
+                .stream()
+                .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
     public User addUser(User user) {
-        user.setCreatedAt(LocalDate.now());
-        user.setUpdatedAt(LocalDate.now());
+        if(isUserRegistered(user.getEmail())){
+            throw new UserAlreadyRegisteredException("User with email: " + user.getEmail() + " is already registered.");
+        }
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(user);
     }
 
     @Override
     @Transactional
-    public User updateUser(User user, long id) {
+    public User updateUser(User user, UUID id) {
         Optional<User> userOptional = userRepository.findById(id);
-        if (!userOptional.isPresent()) {
+        if (!userOptional.isPresent() || userOptional.get().isDeleted()) {
             throw new UserNotFoundException("User not found with id: ", id + "");
         }
         User oldUser = userOptional.get();
@@ -69,41 +71,38 @@ public class UserServiceImplementation implements UserService {
         if (user.getContact() != null) {
             oldUser.setContact(user.getContact());
         }
-        user.setUpdatedAt(LocalDate.now());
+        user.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(oldUser);
     }
 
     @Override
     @Transactional
-    public User replaceUser(User user, long id) {
+    public User replaceUser(User user, UUID id) {
         User oldUser = getSingleUser(id);
         oldUser.setName(user.getName());
         oldUser.setAddress(user.getAddress());
         oldUser.setEmail(user.getEmail());
         oldUser.setContact(user.getContact());
-        oldUser.setUpdatedAt(LocalDate.now());
+        oldUser.setUpdatedAt(LocalDateTime.now());
         return userRepository.save(oldUser);
     }
 
     @Override
-    public void deleteUser(long id) {
+    public void deleteUser(UUID id) {
         Optional<User> userOptional = userRepository.findById(id);
-        if (!userOptional.isPresent()) {
+        if (!userOptional.isPresent() || userOptional.get().isDeleted()) {
             throw new UserNotFoundException("User not found with id: ", id + "");
         }
         User user = userOptional.get();
-        if (user.isDeleted()) {
-            throw new UserDeletedException("User has already been deleted with id: " + id);
-        }
         user.setDeleted(true);
-        user.setUpdatedAt(LocalDate.now());
+        user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
     }
 
     @Override
-    public List<User> getUserByCity(String city) {
-        List<User> userByAddressCity = userRepository.findUserByAddress_City(city);
-        userByAddressCity.forEach(user -> System.out.println(user.getName()));
+    public Page<User> getUserByCity(String city, int page, int size, String sort) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+        Page<User> userByAddressCity = userRepository.findUserByAddress_CityAndDeletedEquals(city, false, pageable);
         if (userByAddressCity.isEmpty()) {
             throw new UserNotFoundException("No user available with city: ", city);
         }
@@ -120,11 +119,39 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public List<User> getUserByFirstCharacter(String firstChar) {
-        List<User> userByFirstLetter = userRepository.getUserByFirstLetter(firstChar + "%");
+    public Slice<User> getUserByFirstCharacter(String firstChar, int page, int size, String sort) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+        Slice<User> userByFirstLetter = userRepository.getUserByFirstLetter(firstChar + "%", pageable);
         if (userByFirstLetter.isEmpty()) {
             throw new RuntimeException("User not found with first character: " + firstChar);
         }
         return userByFirstLetter;
+    }
+
+    @Override
+    public List<UserProjection> getUserCityContact(int page, int size, String sort){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+        return userRepository.getFirstNameCityContact(pageable);
+    }
+
+    @Override
+    public boolean isUserRegistered(String email) {
+        Optional<User> userByEmail = userRepository.findUserByEmail(email);
+        if(userByEmail.isPresent()){
+           return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void addBulkUser(List<User> userList) {
+        userList.forEach(user -> {
+            user.setCreatedAt(LocalDateTime.now());
+            user.setUpdatedAt(LocalDateTime.now());
+            if(isUserRegistered(user.getEmail())){
+                throw new UserAlreadyRegisteredException("User already registered with email: " + user.getEmail());
+            }
+        });
+        userRepository.saveAll(userList);
     }
 }
