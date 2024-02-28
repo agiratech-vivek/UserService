@@ -1,7 +1,6 @@
 package com.example.agirafirstproject.configuration;
 
 import com.example.agirafirstproject.utility.UserMapper;
-import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,8 +11,4 @@ public class UtilConfiguration {
         return new UserMapper();
     }
 
-    @Bean
-    public ModelMapper modelMapper(){
-        return new ModelMapper();
-    }
 }

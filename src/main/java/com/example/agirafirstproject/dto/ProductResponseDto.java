@@ -14,7 +14,7 @@ import java.io.Serializable;
 @Setter
 public class ProductResponseDto implements Serializable {
     String name;
-    CategoryDto category;
+    String category;
     double price;
     String description;
 }

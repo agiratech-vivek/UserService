@@ -16,7 +16,6 @@ public class ProductRequestDto implements Serializable {
     @NotNull(message = "Title cannot be empty or null")
     @NotBlank(message = "Title cannot be empty or null")
     String title;
-    @NotNull(message = "Category cannot be empty or null")
     CategoryRequestDto category;
     @Positive(message = "Price not valid")
     double price;

@@ -1,5 +1,7 @@
 package com.example.agirafirstproject.dto;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
 
 import javax.validation.constraints.NotBlank;
@@ -10,7 +12,9 @@ import java.io.Serializable;
 /**
  * DTO for {@link com.example.agirafirstproject.model.Category}
  */
-@Value
+
+@Getter
+@Setter
 public class CategoryRequestDto implements Serializable {
     @NotNull(message = "Name cannot be null or empty")
     @NotEmpty(message = "Name cannot be null or empty")

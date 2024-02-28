@@ -5,7 +5,9 @@ import com.example.agirafirstproject.exceptions.UserNotFoundException;
 import com.example.agirafirstproject.model.User;
 import com.example.agirafirstproject.repository.UserRepository;
 import com.example.agirafirstproject.repository.projection.UserProjection;
+import com.example.agirafirstproject.repository.specifications.UserSpecs;
 import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -153,5 +155,13 @@ public class UserServiceImplementation implements UserService {
             }
         });
         userRepository.saveAll(userList);
+    }
+
+    @Override
+    public Page<User> searchUserByFilter(String city, int page, int size, String sort) {
+        Specification<User> specification = Specification.where(null);
+        specification = specification.and(UserSpecs.hasUserCity(city));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+        return userRepository.findAll(specification, pageable);
     }
 }

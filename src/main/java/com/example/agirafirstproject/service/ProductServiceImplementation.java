@@ -16,11 +16,9 @@ public class ProductServiceImplementation implements ProductService{
     ProductRepository productRepository;
     @Override
     public Product addProduct(Product product) {
-        product.setCreatedAt(LocalDateTime.now());
-        product.setUpdatedAt(LocalDateTime.now());
         Optional<Product> productOptional = productRepository.findProductByTitleAndDeletedEquals(product.getTitle(), false);
         if(!productOptional.isPresent()){
-            productRepository.save(product);
+            return productRepository.save(product);
         }
         Product oldProduct = productOptional.get();
         return updateProduct(oldProduct.getId(), product);

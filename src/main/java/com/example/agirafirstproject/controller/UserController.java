@@ -91,7 +91,7 @@ public class UserController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "name.firstName") String sort) {
-        Page<User> userPage = userService.getUserByCity(city, page, size, sort);
+        Page<User> userPage = userService.searchUserByFilter(city, page, size, sort);
         Page<UserResponseDto> userResponseDtoPage = userPage.stream().map(user ->
                 userMapper.userToUserResponseDto(user)
         ).collect(Collectors.collectingAndThen(
