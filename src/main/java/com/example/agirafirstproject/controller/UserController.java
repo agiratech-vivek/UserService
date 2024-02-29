@@ -3,6 +3,7 @@ package com.example.agirafirstproject.controller;
 import com.example.agirafirstproject.dto.ModifyUserDto;
 import com.example.agirafirstproject.dto.UserRequestDto;
 import com.example.agirafirstproject.dto.UserResponseDto;
+import com.example.agirafirstproject.exceptions.NoResultsFoundException;
 import com.example.agirafirstproject.model.Address;
 import com.example.agirafirstproject.model.GeoLocation;
 import com.example.agirafirstproject.model.Name;
@@ -94,13 +95,16 @@ public class UserController {
             @RequestParam(defaultValue = "") String contact,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "name.firstName") String sort) {
+            @RequestParam(defaultValue = "name.firstName") String sort) throws NoResultsFoundException {
         Page<User> userPage = userService.searchUserByFilter(city, lastName, firstName, email, contact, page, size, sort);
-        Page<UserResponseDto> userResponseDtoPage = userPage.stream().map(user ->
-                userMapper.userToUserResponseDto(user)
-        ).collect(Collectors.collectingAndThen(
+        Page<UserResponseDto> userResponseDtoPage = userPage.stream()
+                .map(user -> userMapper.userToUserResponseDto(user))
+                .collect(Collectors.collectingAndThen(
                 Collectors.toList(),
                 PageImpl::new));
+        if(userResponseDtoPage.getSize() == 0){
+            throw new NoResultsFoundException("No results found");
+        }
         return new ResponseEntity<>(userResponseDtoPage, HttpStatus.OK);
     }
 

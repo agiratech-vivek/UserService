@@ -39,6 +39,6 @@ public class UserSpecs {
 
     public static Specification<User> hasCreatedAt(String createdAt){
         return ((root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.get("createdAt"), createdAt));
+                criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), createdAt));
     }
 }
