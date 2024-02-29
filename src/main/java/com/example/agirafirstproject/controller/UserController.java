@@ -54,7 +54,7 @@ public class UserController {
                 .map(userRequestDto -> userMapper.UserRequestDtoToUser(userRequestDto))
                 .collect(Collectors.toList());
         userService.addBulkUser(userList);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     @PostMapping
@@ -85,13 +85,17 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/city/{city}")
+    @GetMapping("/filter")
     public ResponseEntity<Page<UserResponseDto>> getUserByCity(
-            @PathVariable String city,
+            @RequestParam(defaultValue = "") String city,
+            @RequestParam(defaultValue = "") String lastName,
+            @RequestParam(defaultValue = "") String firstName,
+            @RequestParam(defaultValue = "") String email,
+            @RequestParam(defaultValue = "") String contact,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "name.firstName") String sort) {
-        Page<User> userPage = userService.searchUserByFilter(city, page, size, sort);
+        Page<User> userPage = userService.searchUserByFilter(city, lastName, firstName, email, contact, page, size, sort);
         Page<UserResponseDto> userResponseDtoPage = userPage.stream().map(user ->
                 userMapper.userToUserResponseDto(user)
         ).collect(Collectors.collectingAndThen(

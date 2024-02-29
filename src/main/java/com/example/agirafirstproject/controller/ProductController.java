@@ -2,7 +2,6 @@ package com.example.agirafirstproject.controller;
 
 import com.example.agirafirstproject.dto.ProductRequestDto;
 import com.example.agirafirstproject.dto.ProductResponseDto;
-import com.example.agirafirstproject.model.Category;
 import com.example.agirafirstproject.model.Product;
 import com.example.agirafirstproject.service.ProductService;
 import com.example.agirafirstproject.utility.ProductMapper;
@@ -10,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/product")
@@ -34,27 +36,31 @@ public class ProductController {
         return productMapper.productToProductResponseDto(productById);
     }
 
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    public void addBulkProduct(@RequestBody List<ProductRequestDto> productRequestDtoList){
+        List<Product> products = productRequestDtoList.stream()
+                .map(productRequestDto ->
+                        productMapper.productRequestDtoToProduct(productRequestDto)
+                ).collect(Collectors.toList());
+        productService.addBulkProduct(products);
+    }
+
     @PostMapping
     public ProductResponseDto addProduct(@RequestBody ProductRequestDto productRequestDto){
-        Product product = new Product();
-        product.setPrice(productRequestDto.getPrice());
-        product.setDescription(productRequestDto.getDescription());
-        product.setTitle(productRequestDto.getTitle());
-        Category category = new Category();
-        category.setName(productRequestDto.getCategory().getName());
-        product.setCategory(category);
-        Product addedProduct = productService.addProduct(product);
-        return productMapper.productToProductResponseDto(addedProduct);
+        Product product = productService.addProduct(productMapper.productRequestDtoToProduct(productRequestDto));
+        return productMapper.productToProductResponseDto(product);
     }
-//
-//    @PutMapping
-//    @ResponseStatus(HttpStatus.OK)
-//    public ProductResponseDto updateProduct(@RequestBody ProductRequestDto productRequestDto, UUID id){
-//        Product product = modelMapper.map(productRequestDto, Product.class);
-//        return modelMapper.map(productService.updateProduct(id, product), ProductResponseDto.class);
-//    }
+
+    @PutMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ProductResponseDto updateProduct(@RequestBody ProductRequestDto productRequestDto, UUID id){
+        Product product = productService.updateProduct(id, productMapper.productRequestDtoToProduct(productRequestDto));
+        return productMapper.productToProductResponseDto(product);
+    }
 
     @DeleteMapping("/{uuid}")
+    @ResponseStatus(HttpStatus.OK)
     public void deleteProduct(@PathVariable UUID uuid){
         productService.deleteProduct(uuid);
     }

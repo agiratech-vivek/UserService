@@ -11,6 +11,6 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public class CategoryDto implements Serializable {
+public class CategoryDto {
     String name;
 }

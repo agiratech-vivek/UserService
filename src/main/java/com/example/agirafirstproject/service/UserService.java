@@ -33,5 +33,10 @@ public interface UserService {
 
     void addBulkUser(List<User> userList);
 
-    Page<User> searchUserByFilter(String city, int page, int size, String sort);
+    Page<User> searchUserByFilter(String city,
+                                  String lastName,
+                                  String firstName,
+                                  String email,
+                                  String contact,
+                                  int page, int size, String sort);
 }

@@ -12,7 +12,7 @@ import java.io.Serializable;
  */
 @Getter
 @Setter
-public class ProductResponseDto implements Serializable {
+public class ProductResponseDto {
     String name;
     String category;
     double price;

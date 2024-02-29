@@ -15,7 +15,7 @@ import java.io.Serializable;
 
 @Getter
 @Setter
-public class CategoryRequestDto implements Serializable {
+public class CategoryRequestDto {
     @NotNull(message = "Name cannot be null or empty")
     @NotEmpty(message = "Name cannot be null or empty")
     @NotBlank(message = "Name cannot be null or empty")

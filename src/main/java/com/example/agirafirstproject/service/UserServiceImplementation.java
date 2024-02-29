@@ -45,7 +45,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     @Transactional
     public User addUser(User user) {
-        if(isUserRegistered(user.getEmail())){
+        if (isUserRegistered(user.getEmail())) {
             throw new UserAlreadyRegisteredException("User with email: " + user.getEmail() + " is already registered.");
         }
         user.setCreatedAt(LocalDateTime.now());
@@ -131,7 +131,7 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public List<UserProjection> getUserCityContact(int page, int size, String sort){
+    public List<UserProjection> getUserCityContact(int page, int size, String sort) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
         return userRepository.getFirstNameCityContact(pageable);
     }
@@ -139,8 +139,8 @@ public class UserServiceImplementation implements UserService {
     @Override
     public boolean isUserRegistered(String email) {
         Optional<User> userByEmail = userRepository.findUserByEmail(email);
-        if(userByEmail.isPresent()){
-           return true;
+        if (userByEmail.isPresent()) {
+            return true;
         }
         return false;
     }
@@ -148,9 +148,7 @@ public class UserServiceImplementation implements UserService {
     @Override
     public void addBulkUser(List<User> userList) {
         userList.forEach(user -> {
-            user.setCreatedAt(LocalDateTime.now());
-            user.setUpdatedAt(LocalDateTime.now());
-            if(isUserRegistered(user.getEmail())){
+            if (isUserRegistered(user.getEmail())) {
                 throw new UserAlreadyRegisteredException("User already registered with email: " + user.getEmail());
             }
         });
@@ -158,9 +156,29 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public Page<User> searchUserByFilter(String city, int page, int size, String sort) {
+    public Page<User> searchUserByFilter(
+            String city,
+            String lastName,
+            String firstName,
+            String email,
+            String contact,
+            int page, int size, String sort) {
         Specification<User> specification = Specification.where(null);
-        specification = specification.and(UserSpecs.hasUserCity(city));
+        if (!city.isEmpty()) {
+            specification = specification.or(UserSpecs.hasUserCity(city));
+        }
+        if (!lastName.isEmpty()) {
+            specification = specification.or(UserSpecs.hasUserLastName(lastName));
+        }
+        if (!firstName.isEmpty()) {
+            specification = specification.and(UserSpecs.hasFirstName(firstName));
+        }
+        if (!email.isEmpty()) {
+            specification = specification.or(UserSpecs.hasUserEmail(email));
+        }
+        if (!contact.isEmpty()) {
+            specification = specification.or(UserSpecs.hasUserContact(contact));
+        }
         Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
         return userRepository.findAll(specification, pageable);
     }

@@ -1,27 +1,33 @@
 package com.example.agirafirstproject.service;
 
 import com.example.agirafirstproject.exceptions.ProductNotFoundException;
+import com.example.agirafirstproject.model.Category;
 import com.example.agirafirstproject.model.Product;
+import com.example.agirafirstproject.repository.CategoryRepository;
 import com.example.agirafirstproject.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static org.springframework.data.repository.util.ClassUtils.ifPresent;
 
 @Service
 public class ProductServiceImplementation implements ProductService{
     @Autowired
     ProductRepository productRepository;
+    @Autowired
+    CategoryRepository categoryRepository;
     @Override
     public Product addProduct(Product product) {
-        Optional<Product> productOptional = productRepository.findProductByTitleAndDeletedEquals(product.getTitle(), false);
-        if(!productOptional.isPresent()){
-            return productRepository.save(product);
-        }
-        Product oldProduct = productOptional.get();
-        return updateProduct(oldProduct.getId(), product);
+        Optional<Category> optionalCategory = categoryRepository.findByNameAndAndDeletedEquals(product.getCategory().getName(), false);
+                optionalCategory.ifPresent(product::setCategory);
+        return productRepository.save(product );
     }
 
     @Override
@@ -66,5 +72,15 @@ public class ProductServiceImplementation implements ProductService{
         Product product = productOptional.get();
         product.setDeleted(true);
         productRepository.save(product);
+    }
+
+    @Transactional
+    public void addBulkProduct(List<Product> productList){
+        productList.forEach(product -> {
+            Optional<Category> optionalCategory =
+                    categoryRepository.findByNameAndAndDeletedEquals(product.getCategory().getName(), false);
+            optionalCategory.ifPresent(product::setCategory);
+            productRepository.save(product);
+        });
     }
 }
